@@ -42,6 +42,10 @@ public class DiscussArrayAdapter extends ArrayAdapter<Comment> {
 	public Comment getItem(int index) {
 		return this.countries.get(index);
 	}
+	
+	public MessageType getType (int index) {
+		return this.countries.get(index).type;
+	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View row = convertView;

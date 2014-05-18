@@ -46,17 +46,9 @@
             android:layout_width="match_parent"
             android:layout_height="409dp"
             android:layout_above="@+id/send_button"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/spinner1" >
+            android:layout_alignParentLeft="true" >
 
         </ListView>
-
-        <Spinner
-            android:id="@+id/spinner1"
-            android:layout_width="match_parent"
-            android:layout_height="24dp"
-            android:layout_alignLeft="@+id/message_list"
-            android:layout_alignParentTop="true" />
 
     </RelativeLayout>
 

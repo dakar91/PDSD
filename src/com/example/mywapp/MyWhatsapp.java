@@ -6,7 +6,9 @@ import android.provider.Settings.Secure;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -27,10 +29,12 @@ import java.util.Date;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class MyWhatsapp extends Activity {
 	private DiscussArrayAdapter adapter;
@@ -41,8 +45,8 @@ public class MyWhatsapp extends Activity {
 	private String fromImei, toImei, toName;
 	private Request whatToSend;
 	private boolean isDone;
-	private Message buffer;
 	private static final int REQUEST_IMAGE_CAPTURE = 1;
+	private static final int PICKFILE_RESULT_CODE = 2;
 	private String mCurrentPhotoPath;
  
 	@Override
@@ -62,6 +66,25 @@ public class MyWhatsapp extends Activity {
 		messageList.setAdapter(adapter);
 		sendMessage = (Button)findViewById(R.id.send_button);
 		messageContent = (EditText)findViewById(R.id.message_content);
+		
+		messageList.setOnItemClickListener(new OnItemClickListener() {
+            public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
+            	try {
+            		if (adapter.getType(position) == MessageType.FILE) {
+            			Intent myIntent = new Intent(android.content.Intent.ACTION_VIEW);
+            			File file = new File(Environment.getExternalStorageDirectory()
+				            	+ File.separator + adapter.getItem(position).comment);
+            			String extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
+            			String mimetype = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+            			myIntent.setDataAndType(Uri.fromFile(file),mimetype);
+            			startActivity(myIntent);
+            		}
+            	} catch (Exception e) {
+                    Log.d(TAG, e.toString()); 
+            	}
+             }
+    	});
+		
 		sendMessage.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
@@ -70,7 +93,7 @@ public class MyWhatsapp extends Activity {
                 Connection.getInstance().sendThis(new SendMessage(toImei, fromImei, 
                 		new TextMessage(messageContent.getText().toString(), toImei, fromImei)));
 				if (!(tmp = messageContent.getText().toString()).equals("")) {
-					adapter.add(new Comment(false, tmp));
+					adapter.add(new Comment(false, tmp, MessageType.TEXT));
 					messageContent.setText(null);
 				}
             }
@@ -78,7 +101,21 @@ public class MyWhatsapp extends Activity {
 		
 
         
-        new Thread(new Runnable() {
+        
+		
+	}
+	
+	@Override
+    public void onStart() {
+		Log.d(TAG, "on start");
+    	super.onStart();
+    }
+ 
+    @Override
+    public void onResume() {
+		Log.d(TAG, "on resume");
+    	super.onResume();
+    	new Thread(new Runnable() {
         	ArrayList<Message> tmp;
         	@Override
         	public void run () {
@@ -94,11 +131,29 @@ public class MyWhatsapp extends Activity {
 	        					messageList.post(new Runnable() {
 	    							@Override
 	    							public void run() {
-	    								for (Message m : tmp) {
-				        					buffer = m;				        					
-				        					TextMessage tm = (TextMessage) buffer;
-				        					adapter.add(new Comment(true, tm.whatToSend));
+	    								for (Message m : tmp) {	
+	    									switch (m.type) {
+	    										case TEXT:
+	    				        					TextMessage tm = (TextMessage) m;
+	    				        					adapter.add(new Comment(true, tm.whatToSend, tm.type));
+	    				        					break;
+	    										case FILE:
+	    											FileMessage fm = (FileMessage) m;
+	    											adapter.add(new Comment(true, fm.fileName, fm.type));
+	    											File file = new File(Environment.getExternalStorageDirectory()
+	    										            	+ File.separator + fm.fileName);
+	    											try {
+	    												file.createNewFile();
+	    												FileOutputStream fos = new FileOutputStream(file);
+	    												fos.write(fm.fileData);
+	    												fos.close();
+	    											} catch (Exception e) {
+	    												Log.d(TAG, e.toString());
+	    											}
+	    											break;
+	    									}
 	    								}
+	    								messageList.smoothScrollToPosition(adapter.getCount() - 1);
 	    							}	
 	    						});
 		        			}
@@ -109,19 +164,6 @@ public class MyWhatsapp extends Activity {
         		}
         	}
         }).start();
-		
-	}
-	
-	@Override
-    public void onStart() {
-		Log.d(TAG, "on start");
-    	super.onStart();
-    }
- 
-    @Override
-    public void onResume() {
-		Log.d(TAG, "on resume");
-    	super.onResume();
     }
  
     @Override
@@ -165,13 +207,15 @@ public class MyWhatsapp extends Activity {
 	        case R.id.camera:
 	        	dispatchTakePictureIntent();
 	            return true;
+	        case R.id.attach:
+	        	dispatchOpenFileIntent();
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
 	}
 	
 	private File createImageFile() throws IOException {
-	    // Create an image file name
 	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 	    String imageFileName = "JPEG_" + timeStamp + "_";
 	    File storageDir = Environment.getExternalStoragePublicDirectory(
@@ -193,6 +237,44 @@ public class MyWhatsapp extends Activity {
 	    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
 	        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
 	    }
+	}
+	
+	private void dispatchOpenFileIntent () {
+		Intent fileintent = new Intent(Intent.ACTION_GET_CONTENT);
+        fileintent.setType("gagt/sdf");
+        try {
+            startActivityForResult(fileintent, PICKFILE_RESULT_CODE);
+        } catch (ActivityNotFoundException e) {
+            Log.e("tag", "No activity can handle picking a file. Showing alternatives.");
+        }
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		String FilePath = new String();
+		File transferFile;
+		byte fileData[];
+		
+        if (data == null)
+            return;
+        switch (requestCode) {
+	        case PICKFILE_RESULT_CODE:
+	            if (resultCode == RESULT_OK) {
+	                FilePath = data.getData().getPath();
+	            }
+	            break;
+	        case REQUEST_IMAGE_CAPTURE:
+	        	break;
+        }
+        try {
+	        transferFile = new File(FilePath);
+	        fileData = new byte[(int)transferFile.length()];
+	        BufferedInputStream bin = new BufferedInputStream(new FileInputStream(transferFile));
+	        bin.read(fileData, 0, fileData.length);
+	        Connection.getInstance().sendThis(new SendMessage(toImei, fromImei, new FileMessage(fileData, transferFile.getName(), toImei, fromImei)));
+        } catch (Exception e) {
+        	Log.d(TAG, e.toString());
+        }
 	}
 	
     @Override

@@ -249,8 +249,9 @@ int drawable abc_textfield_searchview_right_holo_dark 0x7f020055
 int drawable abc_textfield_searchview_right_holo_light 0x7f020056
 int drawable bubble_green 0x7f020057
 int drawable bubble_yellow 0x7f020058
-int drawable ic_camera 0x7f020059
-int drawable ic_launcher 0x7f02005a
+int drawable ic_attach 0x7f020059
+int drawable ic_camera 0x7f02005a
+int drawable ic_launcher 0x7f02005b
 int id action_bar 0x7f05002d
 int id action_bar_activity_content 0x7f050026
 int id action_bar_container 0x7f05002c
@@ -266,6 +267,7 @@ int id activity_chooser_view_content 0x7f050036
 int id alignBounds 0x7f050002
 int id alignMargins 0x7f050003
 int id always 0x7f05001d
+int id attach 0x7f050055
 int id beginning 0x7f050023
 int id bottom 0x7f050005
 int id camera 0x7f050056
@@ -276,7 +278,7 @@ int id checkbox 0x7f05003e
 int id clip_horizontal 0x7f05000f
 int id clip_vertical 0x7f05000e
 int id collapseActionView 0x7f05001f
-int id comment 0x7f050055
+int id comment 0x7f050054
 int id container 0x7f05004e
 int id dates 0x7f05004f
 int id default_activity_button 0x7f050039
@@ -324,7 +326,6 @@ int id shortcut 0x7f05003f
 int id showCustom 0x7f050019
 int id showHome 0x7f050016
 int id showTitle 0x7f050018
-int id spinner1 0x7f050053
 int id split_action_bar 0x7f05002f
 int id start 0x7f050010
 int id submit_area 0x7f05004a
@@ -337,7 +338,7 @@ int id useLogo 0x7f050015
 int id users 0x7f05004d
 int id vertical 0x7f050001
 int id withText 0x7f05001e
-int id wrapper 0x7f050054
+int id wrapper 0x7f050053
 int integer abc_max_action_buttons 0x7f090000
 int layout abc_action_bar_decor 0x7f030000
 int layout abc_action_bar_decor_include 0x7f030001

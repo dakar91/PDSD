@@ -4,9 +4,15 @@
     tools:context="com.example.mywapp.MyWhatsapp" >
     
     <item 
+        android:id="@+id/attach"
+        android:icon="@drawable/ic_attach"
+        android:title="Attach"
+        compat:showAsAction="always"	/>
+    
+    <item 
         android:id="@+id/camera"
         android:icon="@drawable/ic_camera"
         android:title="Camera"
-        compat:showAsAction="always"	/>      
+        compat:showAsAction="always"	/>           
 
 </menu>
